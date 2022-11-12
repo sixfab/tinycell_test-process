@@ -131,6 +131,7 @@ class TesterManager(StateManager):
             for key, value in params.items():
                 command = command + f"{key}={value},"
             command = command[:-1] + ")"
+            self.current.function = command
 
         # It sends the command to the device.
         result = self._send_command(self.current.function)
