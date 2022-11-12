@@ -110,7 +110,12 @@ class TesterManager(StateManager):
         self.pyb.exit_raw_repl()
 
     def _prepare_setup(self) -> None:
-        """It prepares the ordinary setup."""
+        """It prepares the ordinary setup.
+
+        Returns:
+        --------
+        None
+        """
         commands_to_send = [
             "from core.modem import Modem;",
             "from core.temp import debug;",
