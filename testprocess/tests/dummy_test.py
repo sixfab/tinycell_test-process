@@ -2,7 +2,7 @@
 This is a dummy test file to use
 as development purposes.
 """
-from testermanager import TesterManager, Step
+from core.testermanager import TesterManager, Step
 
 # Steps for the test
 step_one_success = Step(

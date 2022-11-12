@@ -4,9 +4,9 @@ It is adapted from tinycell MicroPython SDK.
 """
 import time
 
-from helpers.status import Status
-from helpers.manager import StateManager, Step
-from helpers.pyboard import Pyboard, PyboardError
+from core.helpers.status import Status
+from core.helpers.manager import StateManager, Step
+from core.helpers.pyboard import Pyboard, PyboardError
 
 
 class LogInfo:

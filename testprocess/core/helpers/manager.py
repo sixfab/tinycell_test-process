@@ -2,8 +2,8 @@
 Module for managing processes on modem step by step.
 """
 
-from helpers.cache import cache
-from helpers.status import Status
+from core.helpers.cache import cache
+from core.helpers.status import Status
 
 
 class Step:
