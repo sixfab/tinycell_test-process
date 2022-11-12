@@ -169,7 +169,6 @@ class StateManager:
         else:
             result = self.current.function()
 
-        debug.debug(f"{self.current.function.__name__:<25} : {result}")
         self.cache.set_last_response(result.get("response"))
 
         if result["status"] == Status.SUCCESS:
