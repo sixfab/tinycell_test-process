@@ -72,11 +72,12 @@ class TesterManager(StateManager):
 
         Returns
         -------
-        [logs, total_elapsed_time] : list
-            It returns the logs and the total elapsed time.
+        dict
+            A dict which contains "logs" and "total_elapsed_time".
+            Each logs is a dict which contains "command", "result"
+            and "elapsed_time".
         """
         self._start_repl()
-        print("Starting the test process...")
         # Send the setup commands.
         self._prepare_setup()
 
