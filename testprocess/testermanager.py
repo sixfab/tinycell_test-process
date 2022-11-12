@@ -206,6 +206,9 @@ class TesterManager(StateManager):
         This is an internal function to execute the current step.
         and capture elapsed time and logs.
         """
+        # It is neccesary to check the name of the function,
+        # because our implementation performs opeartions
+        # on function call. And those does not have any call.
         if self.current.name == "success":
             return {"status": Status.SUCCESS, "response": "Test has completed."}
         if self.current.name == "failure":
