@@ -7,15 +7,15 @@ from testermanager import TesterManager, Step
 # Steps for the test
 step_one_success = Step(
     name="step_one",
-    function="modem.network.check_apn",
-    success="step_two_success",
+    function="modem.network.set_apn",
+    success="step_two",
     fail="failure",
     function_params={"apn": "'super'"},
 )
 
 step_two_success = Step(
     name="step_two",
-    function="modem.network.check_network_registration()",
+    function="modem.network.register_network",
     success="success",
     fail="failure"
 )

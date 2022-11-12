@@ -3,6 +3,7 @@ This is the main run file to execute
 tests via given flag settings.
 """
 import argparse
+import json
 from importlib import import_module
 
 
@@ -50,4 +51,9 @@ if __name__ == "__main__":
 
     # Create a process instance and run it.
     test_sm.set_port(port_to_be_tested)
-    test_sm.run_the_test()
+    test_result = test_sm.run_the_test()
+
+    # Convert the result dict to JSON,
+    # and print it.
+    test_result_json = json.dumps(test_result)
+    print(test_result_json)
