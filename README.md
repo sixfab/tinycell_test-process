@@ -16,4 +16,4 @@ The users has to create their test states with using TesterManager class.
 Each test scenario is a state manager which has steps for each function should be called one-by-one. To create steps and state manager, you should import `testermanager.py` file which we have created. One can look the `dummy_test.py` file for an example.
 
 ## TODO
-- [ ] Add support for function parameters given as step attribute.
+- [X] Add support for function parameters given as step attribute.
