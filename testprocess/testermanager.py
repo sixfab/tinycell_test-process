@@ -33,11 +33,12 @@ class LogInfo:
         bool
             True if command succees, False otherwise.
         """
-        if f"'status': {Status.ERROR}" in self.result:
-            return Status.ERROR
+        for per_result in self.result:
+            if f"'status': {Status.ERROR}" in per_result:
+                return Status.ERROR
 
-        if f"'status': {Status.TIMEOUT}" in self.result:
-            return Status.TIMEOUT
+            if f"'status': {Status.TIMEOUT}" in per_result:
+                return Status.TIMEOUT
 
         return Status.SUCCESS
 
@@ -126,11 +127,12 @@ class TesterManager(StateManager):
         # Send each command.
         for command in commands_to_send:
             starting_time = time.time()
-            log_b = self.pyb.exec(command)
+            result_b = self.pyb.exec(command)
             elapsed_time = time.time() - starting_time
 
             # Append logs into logs list.
-            log = LogInfo(command, log_b.decode("utf-8"), elapsed_time)
+            result = self._extract_result(result_b)
+            log = LogInfo(command, result, elapsed_time)
             self.logs.append(log)
 
             # Increase total elipsed time.
@@ -152,7 +154,8 @@ class TesterManager(StateManager):
         result_command_b = self.pyb.exec_("print(result)")
 
         # Extract information from the byte array.
-        result = self._extract_return(result_debug_b, result_command_b)
+        result = self._extract_result(result_debug_b) +\
+                self._extract_result(result_command_b)
         # Add this command to logs.
         log = LogInfo(command, result, elapsed_time)
         self.logs.append(log)
@@ -163,25 +166,23 @@ class TesterManager(StateManager):
             "elapsed_time": log.elapsed_time,
         }
 
-    def _extract_return(self, result_dbg: bytearray, result_cmd: bytearray) -> str:
-        """
-        It extracts the return value from the result string.
+    def _extract_result(self, result: bytearray) -> list:
+        """It extracts the result from the bytearray.
 
         Parameters
         ----------
-        result_dbg : bytearray
-            Bytearray returned by the debug.
-        result_cmd : bytearray
-            Bytearray returned by the command.
+        result : bytearray
+            The raw result of the command.
 
         Returns
         -------
-        str
-            Combination of the debug and command result.
+        list
+            The results of the command by item per line.
         """
-        str_debug = result_dbg.decode("utf-8")
-        str_command = result_cmd.decode("utf-8")
-        return str_debug + str_command
+        str_result = result.decode("utf-8")
+        list_result = str_result.split("\r\n")
+        list_result_no_empty = [item for item in list_result if item]
+        return list_result_no_empty
 
     def _export_logs_as_dict(self) -> dict:
         """It returns the logs as a dict.
@@ -195,7 +196,7 @@ class TesterManager(StateManager):
         """
         return {
             "total_elapsed_time": self.total_elapsed_time,
-            "logs": [log.to_dict() for log in self.logs]
+            "logs": [log.to_dict() for log in self.logs],
         }
 
     ############################
