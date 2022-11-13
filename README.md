@@ -1,7 +1,7 @@
 # tinycell_test-process
 Repo for testing tinycell devices over a linux OS. This program opens a serial connection between your host machine and Tinycell, and sends commmands using state manager architecture.
 
-It outputs a JSON which has the following format:
+It outputs a JSON which has the following format (without identation):
 
 ```json
 {
