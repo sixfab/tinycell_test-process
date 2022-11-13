@@ -2,7 +2,10 @@
 Module for managing processes on modem step by step.
 It is adapted from tinycell MicroPython SDK.
 """
+import os
 import time
+import json
+from datetime import datetime
 
 from core.helpers.status import Status
 from core.helpers.manager import StateManager, Step
@@ -57,6 +60,7 @@ class TesterManager(StateManager):
         self.pyb: Pyboard = None
         self.logs: list = []
         self.total_elapsed_time: float = 0.0
+        self.test_started_on = (datetime.now()).strftime("%d_%m_%Y_%H_%M_%S")
 
         # It sets the current step to the first one,
         # and get the base class attributes.
@@ -110,6 +114,27 @@ class TesterManager(StateManager):
             raise PyboardError("The REPL is already closed.")
         self.pyb.exit_raw_repl()
 
+    def _add_log(self, command, result, elapsed_time) -> LogInfo:
+        # Create log data.
+        log = LogInfo(command, result, elapsed_time)
+        # Add log to the list.
+        self.logs.append(log)
+
+        # Save the test information to a file.
+        test_name = self.function_name
+        test_port = self.tinycell_port.split("/")[-1]
+        log_as_dict = log.to_dict()
+        log_as_dict["test_name"] = test_name
+        log_as_dict["test_port"] = test_port
+
+        # Create the directory if it does not exist.
+        file_location = f"./.logs/{test_port}-{test_name}-{self.test_started_on}.json"
+        os.makedirs(os.path.dirname(file_location), exist_ok=True)
+        with open(file_location, "a", encoding="utf-8") as file:
+            file.write(json.dumps(log_as_dict, indent=4) + ",\n")
+
+        return log
+
     def _prepare_setup(self) -> None:
         """It prepares the ordinary setup.
 
@@ -132,8 +157,7 @@ class TesterManager(StateManager):
 
             # Append logs into logs list.
             result = self._extract_result(result_b)
-            log = LogInfo(command, result, elapsed_time)
-            self.logs.append(log)
+            self._add_log(command, result, elapsed_time)
 
             # Increase total elipsed time.
             self.total_elapsed_time += elapsed_time
@@ -154,11 +178,11 @@ class TesterManager(StateManager):
         result_command_b = self.pyb.exec_("print(result)")
 
         # Extract information from the byte array.
-        result = self._extract_result(result_debug_b) +\
-                self._extract_result(result_command_b)
+        result = self._extract_result(result_debug_b) + self._extract_result(
+            result_command_b
+        )
         # Add this command to logs.
-        log = LogInfo(command, result, elapsed_time)
-        self.logs.append(log)
+        log = self._add_log(command, result, elapsed_time)
 
         return {
             "status": log.get_status(),
