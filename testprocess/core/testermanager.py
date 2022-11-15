@@ -219,6 +219,8 @@ class TesterManager(StateManager):
             and "elapsed_time".
         """
         return {
+            "test_name": self.function_name,
+            "device_port": self.tinycell_port,
             "total_elapsed_time": self.total_elapsed_time,
             "logs": [log.to_dict() for log in self.logs],
         }
