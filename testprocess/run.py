@@ -34,16 +34,25 @@ def init_argument_parser():
         required=True,
         help="Provide the test file name in tests/ subdirectory.",
     )
+    parser.add_argument(
+        "-w",
+        "--watchdog",
+        nargs="+",
+        required=False,
+        help="Provide the timeout in seconds (per step) for Watchdog.",
+    )
 
     return parser.parse_args()
-
 
 if __name__ == "__main__":
     args = init_argument_parser()
 
     # Check test files and ports.
-    test_file_name = args.test[0]
-    port_to_be_tested = args.port[0]
+    test_file_name: str = args.test[0]
+    port_to_be_tested: str = args.port[0]
+    watchdog_timeout: int = None
+    if args.watchdog:
+        watchdog_timeout = int(args.watchdog[0])
 
     # Import the given test file.
     TESTS_DIR = "tests"
@@ -51,7 +60,7 @@ if __name__ == "__main__":
 
     # Create a process instance and run it.
     test_sm.set_port(port_to_be_tested)
-    test_result = test_sm.run_the_test()
+    test_result = test_sm.run_the_test(watchdog_timeout)
 
     # Convert the result dict to JSON,
     # and print it.
