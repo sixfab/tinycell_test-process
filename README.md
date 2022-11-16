@@ -27,6 +27,12 @@ Before calling the `run.py`, make sure that you've installed modules in `require
 ~$ python run.py [-h] -p PORT [PORT ...] -t TEST [TEST ...]
 ```
 
+### Environmental Variables
+You have to set three environmental variables to work with Slack.
+- SLACK_TOKEN: Slack token for your bot.
+- SLACK_SIGNING_SECRET: Slack signing secret for your bot.
+- SLACK_CHANNEL_ID: Slack channel where you want to send the logs.
+
 ## Architecture
 The architecture relies on a test manager class inherited from the state manager used in Tinycell SDK. The problem we did overcome is the implementation of `execute_current_step()` method which was calling a pointer with function parameters given. The inheritence allows us to re-implement that method with desired execution function. In TesterManager class, we send the given functions and their parameters into Tinycell device with using Pyboard tool.
 

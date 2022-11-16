@@ -67,7 +67,7 @@ if __name__ == "__main__":
 
     SLACK_TOKEN = os.environ.get("SLACK_TOKEN")
     SLACK_SIGNING_SECRET = os.environ.get("SLACK_SIGNING_SECRET")
-    CHANNEL_ID = os.environ.get("CHANNEL_ID")
+    SLACK_CHANNEL_ID = os.environ.get("SLACK_CHANNEL_ID")
 
-    slack_bot = SlackBot(SLACK_TOKEN, SLACK_SIGNING_SECRET, CHANNEL_ID)
+    slack_bot = SlackBot(SLACK_TOKEN, SLACK_SIGNING_SECRET, SLACK_CHANNEL_ID)
     slack_bot.send_results(test_result)
