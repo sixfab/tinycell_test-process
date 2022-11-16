@@ -99,6 +99,24 @@ class TesterManager(StateManager):
         # Return the logs.
         return self._export_logs_as_dict()
 
+    def check_any_problem(self) -> int:
+        """This method checks if there is any ERROR
+        or TIMEOUT in the logs.
+
+        Returns
+        -------
+        int
+            A Status code.
+        """
+        for log in self.logs:
+            if log.get_status() == Status.ERROR:
+                return Status.ERROR
+
+            if log.get_status() == Status.TIMEOUT:
+                return Status.TIMEOUT
+
+        return Status.SUCCESS
+
     ############################
     ##    INTERNAL METHODS    ##
     ############################
@@ -218,11 +236,21 @@ class TesterManager(StateManager):
             Each logs is a dict which contains "command", "result"
             and "elapsed_time".
         """
+        logs_as_dict_list = [log.to_dict() for log in self.logs]
+
+        # Get status of test for more summarized information.
+        status_of_test = "Status.SUCCESS"
+        if self.check_any_problem() == Status.ERROR:
+            status_of_test = "Status.ERROR"
+        elif self.check_any_problem() == Status.TIMEOUT:
+            status_of_test = "Status.TIMEOUT"
+
         return {
             "test_name": self.function_name,
             "device_port": self.tinycell_port,
             "total_elapsed_time": self.total_elapsed_time,
-            "logs": [log.to_dict() for log in self.logs],
+            "status_of_test": status_of_test,
+            "logs": logs_as_dict_list,
         }
 
     ############################
