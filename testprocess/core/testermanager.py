@@ -3,49 +3,24 @@ Module for managing processes on modem step by step.
 It is adapted from tinycell MicroPython SDK.
 """
 import os
-import sys
 import time
 import json
+import signal
 from datetime import datetime
 
 from core.helpers.status import Status
 from core.helpers.manager import StateManager, Step
 from core.helpers.pyboard import Pyboard, PyboardError
-from core.watchdog import Watchdog, WatchdogTimeout, SIGALRM
+from core.loginfo import LogInfo
+from core.watchdog import Watchdog, WatchdogTimeout
 
 
-class LogInfo:
-    """This class stores the log information of the command."""
+class TerminateRequest(Exception):
+    """This exception is raised when the test process is terminated."""
 
-    def __init__(self, command, result, elapsed_time) -> None:
-        self.result = result
-        self.elapsed_time = elapsed_time
-        self.command = command
-
-    def to_dict(self) -> dict:
-        """It returns the log as dict."""
-        return {
-            "command": self.command,
-            "result": self.result,
-            "elapsed_time": self.elapsed_time,
-        }
-
-    def get_status(self) -> bool:
-        """It checks if any status returned Status.ERROR.
-
-        Returns
-        -------
-        bool
-            True if command succees, False otherwise.
-        """
-        for per_result in self.result:
-            if f"'status': {Status.ERROR}" in per_result:
-                return Status.ERROR
-
-            if f"'status': {Status.TIMEOUT}" in per_result:
-                return Status.TIMEOUT
-
-        return Status.SUCCESS
+    def __init__(self, message: str) -> None:
+        message: str = f"Terminate request: {message}"
+        super().__init__(message)
 
 
 class TesterManager(StateManager):
@@ -54,6 +29,7 @@ class TesterManager(StateManager):
     for the testing purposes which uses StateManager
     as its base class.
     """
+    TERMINATION_SIGNAL = signal.SIGUSR1
 
     def __init__(self, first_step, function_name=None) -> None:
         # User-defined attributes.
@@ -98,6 +74,9 @@ class TesterManager(StateManager):
         self.wdg_timeout = timeout
         self.watchdog = Watchdog(timeout, self._watchdog_handler)
 
+        # Append SIGTERM handler.
+        signal.signal(self.TERMINATION_SIGNAL, self._sudden_kill_handler)
+
         try:
             self._start_repl()
             # Send the setup commands.
@@ -113,8 +92,17 @@ class TesterManager(StateManager):
             # Close the REPL.
             self._stop_repl()
 
+        # If WatchdogTimeout is raised, append the status and finish test.
         except WatchdogTimeout:
-            print(self._timeout_error_message(), file=sys.stderr)
+            logs_as_dict = self._export_logs_as_dict()
+            logs_as_dict["status_of_test"] = "WATCHDOG_TIMEOUT"
+            return logs_as_dict
+
+        # If TerminateRequest came from coordinator, append the status and finish test.
+        except TerminateRequest:
+            logs_as_dict = self._export_logs_as_dict()
+            logs_as_dict["status_of_test"] = "TERMINATE_REQUEST"
+            return logs_as_dict
 
         # Return the logs.
         return self._export_logs_as_dict()
@@ -275,13 +263,22 @@ class TesterManager(StateManager):
 
     def _watchdog_handler(self, signum: int, _):
         """It handles the watchdog timeout."""
-        if signum == SIGALRM:
+        if signum == signal.SIGALRM:
             self._stop_repl()
             raise WatchdogTimeout(self._timeout_error_message())
 
+    def _sudden_kill_handler(self, signum: int, _):
+        """
+        It handles the SIGTERM signal which
+        comes from coordinator.
+        """
+        if signum == self.TERMINATION_SIGNAL:
+            self._stop_repl()
+            raise TerminateRequest("The test was terminated by the coordinator.")
+
     def _timeout_error_message(self):
         return (
-            f"The test {self.function_name} has been interrupted "\
+            f"The test {self.function_name} has been interrupted "
             f"because it took more than {self.wdg_timeout} seconds."
         )
 

@@ -69,7 +69,6 @@ if __name__ == "__main__":
     # Convert the result dict to JSON,
     # and print it.
     test_result_json = json.dumps(test_result)
-    print(test_result_json)
 
     # Send the result to Slack.
     load_dotenv()
