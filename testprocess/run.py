@@ -2,9 +2,13 @@
 This is the main run file to execute
 tests via given flag settings.
 """
+import os
 import argparse
 import json
 from importlib import import_module
+from dotenv import load_dotenv
+
+from core.slackbot import SlackBot
 
 
 def init_argument_parser():
@@ -57,3 +61,13 @@ if __name__ == "__main__":
     # and print it.
     test_result_json = json.dumps(test_result)
     print(test_result_json)
+
+    # Send the result to Slack.
+    load_dotenv()
+
+    SLACK_TOKEN = os.environ.get("SLACK_TOKEN")
+    SLACK_SIGNING_SECRET = os.environ.get("SLACK_SIGNING_SECRET")
+    SLACK_CHANNEL_ID = os.environ.get("SLACK_CHANNEL_ID")
+
+    slack_bot = SlackBot(SLACK_TOKEN, SLACK_SIGNING_SECRET, SLACK_CHANNEL_ID)
+    slack_bot.send_results(test_result)
