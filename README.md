@@ -1,31 +1,46 @@
 # tinycell_test-process
-Repo for testing tinycell devices over a linux OS. This program opens a serial connection between your host machine and Tinycell, and sends commmands using state manager architecture.
+Repo for testing tinycell devices over a linux OS. This program opens a serial connection between your host machine and Tinycell, and sends commmands using state manager architecture. It does not output anything to standart output, but logs the current test results on `.log/` and sends a message to given Slack channel.
 
-It outputs a JSON which has the following format (without identation):
-
-```json
-{
-   "total_elapsed_time":5.1807169914245605,
-   "logs":[
-      {
-         "command":"SOME_COMMAND",
-         "result":[
-            "SOME_RESULT_1",
-            "SOME_RESULT_2",
-            "SOME_RESULT_3",
-         ],
-         "elapsed_time":4.273318290710449
-      },
-      // (...)
-   ]
-}
+Example Slack message can be found below:
+```md
+==== Test Results for _test-name_ ====
+- Status: Status.SUCCESS
+- Device Port: /dev/ttyACM0
+- Total Elapsed Time: 4.041985750198364
+"""
+[
+    {
+        "command": "SOME_COMMAND",
+        "result": [],
+        "elapsed_time": 3.1457700729370117
+    },
+    {
+        "command": "SOME_OTHER_COMMAND",
+        "result": [
+           "SOME_DEBUG_MESSAGE",
+           "SOME_DEBUG_MESSAGE",
+           "SOME_DEBUG_MESSAGE",
+        ],
+        "elapsed_time": 0.43717122077941895
+    },
+    (...)
+]
+"""
 ```
+
 
 ## Usage
 Before calling the `run.py`, make sure that you've installed modules in `requirements.txt` file.
 ```bash
 ~$ python run.py [-h] -p PORT [PORT ...] -t TEST [TEST ...]
 ```
+### Status Types
+These status messages will be returned by the program to Slack channel.
+- `Status.SUCCESS`: All tests passed.
+- `Status.ERROR`: At least one test failed.
+- `Status.TIMEOUT`: At least one test timed out.
+- `WATCHDOG_TIMEOUT`: Watchdog stopped the program.
+- `TERMINATE_REQUEST`: Program was terminated by coordinator (SIGUSR1).
 
 ### Environmental Variables
 You have to set three environmental variables to work with Slack.
@@ -37,6 +52,9 @@ You have to set three environmental variables to work with Slack.
 The architecture relies on a test manager class inherited from the state manager used in Tinycell SDK. The problem we did overcome is the implementation of `execute_current_step()` method which was calling a pointer with function parameters given. The inheritence allows us to re-implement that method with desired execution function. In TesterManager class, we send the given functions and their parameters into Tinycell device with using Pyboard tool.
 
 The users has to create their test states with using TesterManager class.
+
+### Hard-Stop for the Test
+If you want to stop the test, you can send a `SIGUSR1` signal to the program. This will terminate the program and send a `TERMINATE_REQUEST` message to Slack channel.
 
 ## Creating Tests
 Each test scenario is a state manager which has steps for each function should be called one-by-one. To create steps and state manager, you should import `testermanager.py` file which we have created. One can look the `dummy_test.py` file for an example.
