@@ -3,6 +3,7 @@ Module for managing processes on modem step by step.
 It is adapted from tinycell MicroPython SDK.
 """
 import os
+import sys
 import time
 import json
 from datetime import datetime
@@ -10,6 +11,7 @@ from datetime import datetime
 from core.helpers.status import Status
 from core.helpers.manager import StateManager, Step
 from core.helpers.pyboard import Pyboard, PyboardError
+from core.watchdog import Watchdog, WatchdogTimeout, SIGALRM
 
 
 class LogInfo:
@@ -58,9 +60,12 @@ class TesterManager(StateManager):
         self.tinycell_port: str = None
         # Internal attributes.
         self.pyb: Pyboard = None
+        self.watchdog: Watchdog = None
+        self.wdg_timeout: int = 0
+
         self.logs: list = []
         self.total_elapsed_time: float = 0.0
-        self.test_started_on = (datetime.now()).strftime("%d_%m_%Y_%H_%M_%S")
+        self.test_started_on: str = (datetime.now()).strftime("%d_%m_%Y_%H_%M_%S")
 
         # It sets the current step to the first one,
         # and get the base class attributes.
@@ -71,9 +76,14 @@ class TesterManager(StateManager):
         self.tinycell_port = port
         self.pyb = Pyboard(self.tinycell_port)
 
-    def run_the_test(self) -> list:
+    def run_the_test(self, timeout: int = None) -> list:
         """It runs all the steps on the
         state manager and returns the result.
+
+        Parameters
+        ----------
+        timeout : int, optional
+            Timeout for the watchdog, by default 5 minutes
 
         Returns
         -------
@@ -82,19 +92,29 @@ class TesterManager(StateManager):
             Each logs is a dict which contains "command", "result"
             and "elapsed_time".
         """
-        self._start_repl()
-        # Send the setup commands.
-        self._prepare_setup()
+        # Set up the Watchdog.
+        if timeout is None:
+            timeout = 300  # seconds
+        self.wdg_timeout = timeout
+        self.watchdog = Watchdog(timeout, self._watchdog_handler)
 
-        # Run the state manager.
-        while True:
-            result = self.run()
-            if result["status"] != Status.ONGOING:
-                break
-            time.sleep(result["interval"])
+        try:
+            self._start_repl()
+            # Send the setup commands.
+            self._prepare_setup()
 
-        # Close the REPL.
-        self._stop_repl()
+            # Run the state manager.
+            while True:
+                result = self.run()
+                if result["status"] != Status.ONGOING:
+                    break
+                time.sleep(result["interval"])
+
+            # Close the REPL.
+            self._stop_repl()
+
+        except WatchdogTimeout:
+            print(self._timeout_error_message(), file=sys.stderr)
 
         # Return the logs.
         return self._export_logs_as_dict()
@@ -253,6 +273,18 @@ class TesterManager(StateManager):
             "logs": logs_as_dict_list,
         }
 
+    def _watchdog_handler(self, signum: int, _):
+        """It handles the watchdog timeout."""
+        if signum == SIGALRM:
+            self._stop_repl()
+            raise WatchdogTimeout(self._timeout_error_message())
+
+    def _timeout_error_message(self):
+        return (
+            f"The test {self.function_name} has been interrupted "\
+            f"because it took more than {self.wdg_timeout} seconds."
+        )
+
     ############################
     ##   OVERRIDEN METHODS    ##
     ############################
@@ -288,5 +320,8 @@ class TesterManager(StateManager):
             self.current.is_ok = True
         else:
             self.current.is_ok = False
+
+        # Kicks the Watchdog.
+        self.watchdog.reset()
 
         return result
