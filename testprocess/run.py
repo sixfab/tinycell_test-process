@@ -8,6 +8,7 @@ import json
 from importlib import import_module
 from dotenv import load_dotenv
 
+from core.helpers.config import SLACK_BOT_TOKEN
 from core.slackbot import SlackBot
 
 
@@ -77,5 +78,5 @@ if __name__ == "__main__":
     SLACK_SIGNING_SECRET = os.environ.get("SLACK_SIGNING_SECRET")
     SLACK_CHANNEL_ID = os.environ.get("SLACK_CHANNEL_ID")
 
-    slack_bot = SlackBot(SLACK_TOKEN, SLACK_SIGNING_SECRET, SLACK_CHANNEL_ID)
+    slack_bot = SlackBot(SLACK_BOT_TOKEN, "tinycell-test")
     slack_bot.send_results(test_result)

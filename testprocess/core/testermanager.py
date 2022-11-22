@@ -8,6 +8,7 @@ import json
 import signal
 from datetime import datetime
 
+from core.helpers.config import REPORT_PATH
 from core.helpers.status import Status
 from core.helpers.manager import StateManager, Step
 from core.helpers.pyboard import Pyboard, PyboardError
@@ -154,7 +155,7 @@ class TesterManager(StateManager):
         log_as_dict["test_port"] = test_port
 
         # Create the directory if it does not exist.
-        file_location = f"./.logs/{test_port}-{test_name}-{self.test_started_on}.json"
+        file_location = f"{REPORT_PATH}/{test_port}-{test_name}-{self.test_started_on}.json"
         os.makedirs(os.path.dirname(file_location), exist_ok=True)
         with open(file_location, "a", encoding="utf-8") as file:
             file.write(json.dumps(log_as_dict, indent=4) + ",\n")
