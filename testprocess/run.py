@@ -8,7 +8,7 @@ import json
 from importlib import import_module
 from dotenv import load_dotenv
 
-from core.helpers.config import SLACK_BOT_TOKEN
+from core.helpers.config import SLACK_BOT_TOKEN, TEMP_PATH, SLACK_REPORT_CHANNEL
 from core.slackbot import SlackBot
 
 
@@ -49,6 +49,7 @@ def init_argument_parser():
 
     return parser.parse_args()
 
+
 if __name__ == "__main__":
     args = init_argument_parser()
 
@@ -59,8 +60,9 @@ if __name__ == "__main__":
     if args.watchdog:
         watchdog_timeout = int(args.watchdog[0])
 
+    TESTS_DIR = f"{TEMP_PATH}/test-process/testprocess/tests"
+
     # Import the given test file.
-    TESTS_DIR = "tests"
     test_sm = import_module(f"{TESTS_DIR}.{test_file_name}").state_manager
 
     # Create a process instance and run it.
@@ -78,5 +80,5 @@ if __name__ == "__main__":
     SLACK_SIGNING_SECRET = os.environ.get("SLACK_SIGNING_SECRET")
     SLACK_CHANNEL_ID = os.environ.get("SLACK_CHANNEL_ID")
 
-    slack_bot = SlackBot(SLACK_BOT_TOKEN, "tinycell-test")
+    slack_bot = SlackBot(SLACK_BOT_TOKEN, SLACK_REPORT_CHANNEL)
     slack_bot.send_results(test_result)
