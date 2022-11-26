@@ -28,6 +28,14 @@ Example Slack message can be found below:
 """
 ```
 
+## Configuration
+Create `~/.tinycell_coordinator/.env` file.
+`.env` file must iclude following variables:
+```
+SLACK_BOT_TOKEN
+SLACK_REPORT_CHANNEL
+```
+
 
 ## Usage
 Before calling the `run.py`, make sure that you've installed modules in `requirements.txt` file.

@@ -5,17 +5,13 @@ This modules handles the connection and sending messages to Slack.
 import json
 from slack_bolt import App
 
-
 class SlackBot:
     """This class is used to send messages to slack."""
 
-    def __init__(self, token: str, signing_secret: str, channel_id: str) -> None:
+    def __init__(self, bot_token: str, channel: str) -> None:
         """This function initializes the SlackBot class."""
-        self.app = App(
-            token=token,
-            signing_secret=signing_secret,
-        )
-        self.channel_id = channel_id
+        self.app = App(token=bot_token)
+        self.channel = channel
 
     def send_results(self, test_result: dict) -> None:
         """This function sends a message to the channel."""
@@ -33,7 +29,7 @@ class SlackBot:
         try:
             while True:
                 result = self.app.client.chat_postMessage(
-                    channel=self.channel_id, text=message
+                    channel=self.channel, text=message
                 )
 
                 if result.get("ok"):

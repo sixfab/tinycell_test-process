@@ -8,6 +8,7 @@ import json
 from importlib import import_module
 from dotenv import load_dotenv
 
+from core.helpers.config import SLACK_BOT_TOKEN, SLACK_REPORT_CHANNEL, TESTS_DIR
 from core.slackbot import SlackBot
 
 
@@ -48,6 +49,7 @@ def init_argument_parser():
 
     return parser.parse_args()
 
+
 if __name__ == "__main__":
     args = init_argument_parser()
 
@@ -59,7 +61,6 @@ if __name__ == "__main__":
         watchdog_timeout = int(args.watchdog[0])
 
     # Import the given test file.
-    TESTS_DIR = "tests"
     test_sm = import_module(f"{TESTS_DIR}.{test_file_name}").state_manager
 
     # Create a process instance and run it.
@@ -73,9 +74,5 @@ if __name__ == "__main__":
     # Send the result to Slack.
     load_dotenv()
 
-    SLACK_TOKEN = os.environ.get("SLACK_TOKEN")
-    SLACK_SIGNING_SECRET = os.environ.get("SLACK_SIGNING_SECRET")
-    SLACK_CHANNEL_ID = os.environ.get("SLACK_CHANNEL_ID")
-
-    slack_bot = SlackBot(SLACK_TOKEN, SLACK_SIGNING_SECRET, SLACK_CHANNEL_ID)
+    slack_bot = SlackBot(SLACK_BOT_TOKEN, SLACK_REPORT_CHANNEL)
     slack_bot.send_results(test_result)
