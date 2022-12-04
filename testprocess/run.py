@@ -72,7 +72,5 @@ if __name__ == "__main__":
     test_result_json = json.dumps(test_result)
 
     # Send the result to Slack.
-    load_dotenv()
-
     slack_bot = SlackBot(SLACK_BOT_TOKEN, SLACK_REPORT_CHANNEL)
     slack_bot.send_results(test_result)
