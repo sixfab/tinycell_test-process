@@ -16,15 +16,21 @@ class SlackBot:
     def send_results(self, test_result: dict) -> None:
         """This function sends a message to the channel."""
         json_logs = json.dumps(test_result.get("logs"), indent=4)
+        json_status_counts = json.dumps(test_result.get("status_counts"), indent=4)
 
         message: str = (
             f'==== Test Results for _{test_result.get("test_name")}_ ====\n'
             f'- Status: *{test_result.get("status_of_test")}*\n'
             f'- Device Port: {test_result.get("device_port")}\n'
             f'- Total Elapsed Time: {test_result.get("total_elapsed_time")}\n\n'
-            f"```\n"
-            f"{json_logs}\n"
-            f"```\n"
+            f'```\n'
+            f'{json_logs}\n'
+            f'```\n'
+            f'- Number of Status Types:\n'
+            f'```\n'
+            f'{json_status_counts}\n'
+            f'```\n'
+            f'==== End of Test Results ===='
         )
         try:
             while True:

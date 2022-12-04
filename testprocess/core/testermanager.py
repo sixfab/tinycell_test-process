@@ -259,8 +259,29 @@ class TesterManager(StateManager):
             "device_port": self.tinycell_port,
             "total_elapsed_time": self.total_elapsed_time,
             "status_of_test": status_of_test,
+            "status_counts": self._get_status_counts(),
             "logs": logs_as_dict_list,
         }
+
+    def _get_status_counts(self) -> dict:
+        """It returns the number of each status type.
+
+        Returns
+        -------
+        dict
+            A dict which contains the status counts.
+        """
+        status_counts = {
+            "Status.SUCCESS": 0,
+            "Status.ERROR": 0,
+            "Status.TIMEOUT": 0,
+        }
+
+        for log in self.logs:
+            status_counts[log.get_status()] += 1
+
+        return status_counts
+
 
     def _watchdog_handler(self, signum: int, _):
         """It handles the watchdog timeout."""
