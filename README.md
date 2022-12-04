@@ -3,25 +3,29 @@ Repo for testing tinycell devices over a linux OS. This program opens a serial c
 
 Example Slack message can be found below:
 ```md
-==== Test Results for _test-name_ ====
-- Status: Status.SUCCESS
-- Device Port: /dev/ttyACM0
-- Total Elapsed Time: 4.041985750198364
+- *Test Script*: dummy_test
+- *Test Status*: Status.SUCCESS
+        - Success: 6
+        - Error: 0
+        - Timeout: 0
+- *Device Port*: /dev/ttyACM0
+- *Total Elapsed Time*: 4.167506217956543
 """
 [
     {
-        "command": "SOME_COMMAND",
+        "command": "SOME COMMAND",
         "result": [],
-        "elapsed_time": 3.1457700729370117
+        "elapsed_time": 3.271233320236206
     },
     {
-        "command": "SOME_OTHER_COMMAND",
+        "command": "SOME COMMAND",
         "result": [
-           "SOME_DEBUG_MESSAGE",
-           "SOME_DEBUG_MESSAGE",
-           "SOME_DEBUG_MESSAGE",
+            "SOME RESULT 1",
+            "SOME RESULT 2",
+            "SOME RESULT 3",
+            (...)
         ],
-        "elapsed_time": 0.43717122077941895
+        "elapsed_time": 0.4333963394165039
     },
     (...)
 ]
