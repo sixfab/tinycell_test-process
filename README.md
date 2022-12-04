@@ -53,7 +53,6 @@ These status messages will be returned by the program to Slack channel.
 ### Environmental Variables
 You have to set three environmental variables to work with Slack.
 - `SLACK_TOKEN`: Slack token for your bot.
-- `SLACK_SIGNING_SECRET`: Slack signing secret for your bot.
 - `SLACK_CHANNEL_ID`: Slack channel where you want to send the logs.
 
 ## Architecture
