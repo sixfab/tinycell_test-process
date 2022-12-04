@@ -278,7 +278,14 @@ class TesterManager(StateManager):
         }
 
         for log in self.logs:
-            status_counts[log.get_status()] += 1
+            if log.get_status() == Status.SUCCESS:
+                status_counts["Status.SUCCESS"] += 1
+            elif log.get_status() == Status.ERROR:
+                status_counts["Status.ERROR"] += 1
+            elif log.get_status() == Status.TIMEOUT:
+                status_counts["Status.TIMEOUT"] += 1
+            else:
+                raise ValueError("Unknown status.")
 
         return status_counts
 
