@@ -7,7 +7,7 @@ Example Slack message can be found below:
 - Status: Status.SUCCESS
 - Device Port: /dev/ttyACM0
 - Total Elapsed Time: 4.041985750198364
-(as test_result.json)):
+(as test_result.json):
 [
     {
         "command": "SOME_COMMAND",
