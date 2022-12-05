@@ -2,8 +2,7 @@
 import os
 from dotenv import load_dotenv
 
-# TEMP_PATH = os.path.expanduser("~") + "/.tinycell_test-coordinator"
-TEMP_PATH = "."
+TEMP_PATH = os.path.expanduser("~") + "/.tinycell_test-coordinator"
 ENVIRONMENT_PATH = f"{TEMP_PATH}/.env"
 TESTS_DIR = "tests"
 
