@@ -28,20 +28,18 @@ Example Slack message can be found below:
 """
 ```
 
-## Configuration
-Create `~/.tinycell_coordinator/.env` file.
-`.env` file must iclude following variables:
-```
-SLACK_BOT_TOKEN
-SLACK_REPORT_CHANNEL
-```
-
-
 ## Usage
 Before calling the `run.py`, make sure that you've installed modules in `requirements.txt` file.
+Create a .env file as described in the next section.
 ```bash
 ~$ python run.py [-h] -p PORT [PORT ...] -t TEST [TEST ...]
 ```
+
+### Environmental Variables
+Environment file must be kept on `~/.tinycell_test-coordinator/.env` location -- even if you don't use test-coordinator program. It is designed this way to have integration with each other. In this environment secrets file, you have to set two variables to work with Slack.
+- `SLACK_BOT_TOKEN`: Bot User OAuth Token which can be found on api.slack.com.
+- `SLACK_REPORT_CHANNEL_ID`: Slack channel ID where you want to send the logs.
+
 ### Status Types
 These status messages will be returned by the program to Slack channel.
 - `Status.SUCCESS`: All tests passed.
@@ -49,11 +47,6 @@ These status messages will be returned by the program to Slack channel.
 - `Status.TIMEOUT`: At least one test timed out.
 - `WATCHDOG_TIMEOUT`: Watchdog stopped the program.
 - `TERMINATE_REQUEST`: Program was terminated by coordinator (SIGUSR1).
-
-### Environmental Variables
-Environment file should be kept on `~/.tinycell_test-coordinator/.env` location -- even if you don't use test-coordinator program. It is designed this way to have integration with each other. In this environment secrets file, you have to set two variables to work with Slack.
-- `SLACK_BOT_TOKEN`: Bot User OAuth Token which can be found on api.slack.com.
-- `SLACK_REPORT_CHANNEL`: Slack channel where you want to send the logs including "#" character.
 
 ## Architecture
 The architecture relies on a test manager class inherited from the state manager used in Tinycell SDK. The problem we did overcome is the implementation of `execute_current_step()` method which was calling a pointer with function parameters given. The inheritence allows us to re-implement that method with desired execution function. In TesterManager class, we send the given functions and their parameters into Tinycell device with using Pyboard tool.
