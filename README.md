@@ -1,5 +1,5 @@
 # tinycell_test-process
-Repo for testing tinycell devices over a linux OS. This program opens a serial connection between your host machine and Tinycell, and sends commmands using state manager architecture. It does not output anything to standart output, but logs the current test results on `.log/` and sends a message to given Slack channel.
+Repo for testing tinycell devices over a linux OS. This program opens a serial connection between your host machine and Tinycell, and sends commmands using state manager architecture. It does not output anything to standart output, but logs the current test results on `reports/` and sends a message to given Slack channel.
 
 Example Slack message can be found below:
 ```md
