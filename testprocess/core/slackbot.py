@@ -5,13 +5,15 @@ This modules handles the connection and sending messages to Slack.
 import json
 from slack_bolt import App
 
+
 class SlackBot:
     """This class is used to send messages to slack."""
 
-    def __init__(self, bot_token: str, channel: str) -> None:
+    def __init__(self, bot_token: str, channel_id: str) -> None:
         """This function initializes the SlackBot class."""
         self.app = App(token=bot_token)
-        self.channel = channel
+        # Note that this is the channel ID but not its name.
+        self.channel = channel_id
 
     def send_results(self, test_result: dict) -> None:
         """This function sends a message to the channel."""
@@ -22,14 +24,15 @@ class SlackBot:
             f'- Status: *{test_result.get("status_of_test")}*\n'
             f'- Device Port: {test_result.get("device_port")}\n'
             f'- Total Elapsed Time: {test_result.get("total_elapsed_time")}\n\n'
-            f"```\n"
-            f"{json_logs}\n"
-            f"```\n"
         )
+
         try:
             while True:
-                result = self.app.client.chat_postMessage(
-                    channel=self.channel, text=message
+                result = self.app.client.files_upload_v2(
+                    channel=self.channel,
+                    initial_comment=message,
+                    content=json_logs,
+                    filename="test_results.json",
                 )
 
                 if result.get("ok"):
