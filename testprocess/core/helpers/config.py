@@ -2,7 +2,8 @@
 import os
 from dotenv import load_dotenv
 
-TEMP_PATH = os.path.expanduser("~") + "/.tinycell_test-coordinator"
+# TEMP_PATH = os.path.expanduser("~") + "/.tinycell_test-coordinator"
+TEMP_PATH = "."
 ENVIRONMENT_PATH = f"{TEMP_PATH}/.env"
 TESTS_DIR = "tests"
 
@@ -14,5 +15,5 @@ if not os.path.exists(REPORT_PATH):
 load_dotenv(ENVIRONMENT_PATH)
 
 SLACK_BOT_TOKEN = os.environ.get("SLACK_BOT_TOKEN")
-SLACK_REPORT_CHANNEL = os.environ.get("SLACK_REPORT_CHANNEL")
+SLACK_REPORT_CHANNEL_ID = os.environ.get("SLACK_REPORT_CHANNEL_ID")
 SLACK_COMMAND_CHANNEL = os.environ.get("SLACK_COMMAND_CHANNEL")

@@ -8,7 +8,7 @@ import json
 from importlib import import_module
 from dotenv import load_dotenv
 
-from core.helpers.config import SLACK_BOT_TOKEN, SLACK_REPORT_CHANNEL, TESTS_DIR
+from core.helpers.config import SLACK_BOT_TOKEN, SLACK_REPORT_CHANNEL_ID, TESTS_DIR
 from core.slackbot import SlackBot
 
 
@@ -74,5 +74,5 @@ if __name__ == "__main__":
     # Send the result to Slack.
     load_dotenv()
 
-    slack_bot = SlackBot(SLACK_BOT_TOKEN, SLACK_REPORT_CHANNEL)
+    slack_bot = SlackBot(SLACK_BOT_TOKEN, SLACK_REPORT_CHANNEL_ID)
     slack_bot.send_results(test_result)
