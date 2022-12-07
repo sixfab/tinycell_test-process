@@ -49,6 +49,7 @@ These status messages will be returned by the program to Slack channel.
 - `Status.TIMEOUT`: At least one test timed out.
 - `WATCHDOG_TIMEOUT`: Watchdog stopped the program.
 - `TERMINATE_REQUEST`: Program was terminated by coordinator (SIGUSR1).
+- `MP_EXCEPTON`: A MicroPython exception occured.
 
 ### Environmental Variables
 Environment file should be kept on `~/.tinycell_test-coordinator/.env` location -- even if you don't use test-coordinator program. It is designed this way to have integration with each other. In this environment secrets file, you have to set two variables to work with Slack.
