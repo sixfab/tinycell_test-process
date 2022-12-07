@@ -55,9 +55,9 @@ These status messages will be returned by the program to Slack channel.
 - `TERMINATE_REQUEST`: Program was terminated by coordinator (SIGUSR1).
 
 ### Environmental Variables
-You have to set three environmental variables to work with Slack.
-- `SLACK_TOKEN`: Slack token for your bot.
-- `SLACK_CHANNEL_ID`: Slack channel where you want to send the logs.
+Environment file should be kept on `~/.tinycell_test-coordinator/.env` location -- even if you don't use test-coordinator program. It is designed this way to have integration with each other. In this environment secrets file, you have to set two variables to work with Slack.
+- `SLACK_BOT_TOKEN`: Bot User OAuth Token which can be found on api.slack.com.
+- `SLACK_REPORT_CHANNEL`: Slack channel where you want to send the logs including "#" character.
 
 ## Architecture
 The architecture relies on a test manager class inherited from the state manager used in Tinycell SDK. The problem we did overcome is the implementation of `execute_current_step()` method which was calling a pointer with function parameters given. The inheritence allows us to re-implement that method with desired execution function. In TesterManager class, we send the given functions and their parameters into Tinycell device with using Pyboard tool.
