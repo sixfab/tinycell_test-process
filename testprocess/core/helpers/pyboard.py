@@ -452,7 +452,7 @@ class Pyboard:
         if data != b"OK":
             raise PyboardError("could not exec command (response: %r)" % data)
 
-    def exec_raw(self, command, timeout=10, data_consumer=None):
+    def exec_raw(self, command, timeout=30, data_consumer=None):
         self.exec_raw_no_follow(command)
         return self.follow(timeout, data_consumer)
 
@@ -771,9 +771,7 @@ def main():
         def execbuffer(buf):
             try:
                 if args.follow is None or args.follow:
-                    ret, ret_err = pyb.exec_raw(
-                        buf, timeout=None, data_consumer=stdout_write_bytes
-                    )
+                    ret, ret_err = pyb.exec_raw(buf, timeout=None, data_consumer=stdout_write_bytes)
                 else:
                     pyb.exec_raw_no_follow(buf)
                     ret_err = None
