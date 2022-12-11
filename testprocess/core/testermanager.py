@@ -337,13 +337,16 @@ class TesterManager(StateManager):
 
         params = self.current.function_params
 
-        # Construct the command to be sent.
-        self.current.function += "("
-        if params:
-            for key, value in params.items():
-                self.current.function += f"{key}={value},"
-            self.current.function = self.current.function[:-1]
-        self.current.function += ")"
+        # It checks if the current step is a retry
+        if not "(" in self.current.function:
+            params = self.current.function_params
+            # Construct the command to be sent.
+            self.current.function += "("
+            if params:
+                for key, value in params.items():
+                    self.current.function += f"{key}={value},"
+                self.current.function = self.current.function[:-1]
+            self.current.function += ")"
 
         # It sends the command to the device.
         result = self._send_command(self.current.function)
