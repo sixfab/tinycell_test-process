@@ -95,14 +95,22 @@ class TesterManager(StateManager):
 
         # If WatchdogTimeout is raised, append the status and finish test.
         except WatchdogTimeout:
+            self._add_log("WATCHDOG_TIMEOUT", "WATCHDOG_TIMEOUT", -1)
             logs_as_dict = self._export_logs_as_dict()
             logs_as_dict["status_of_test"] = "WATCHDOG_TIMEOUT"
             return logs_as_dict
 
         # If TerminateRequest came from coordinator, append the status and finish test.
         except TerminateRequest:
+            self._add_log("TERMINATE_REQUEST", "TERMINATE_REQUEST", -1)
             logs_as_dict = self._export_logs_as_dict()
             logs_as_dict["status_of_test"] = "TERMINATE_REQUEST"
+            return logs_as_dict
+
+        except Exception as error_message:
+            self._add_log("MicroPython Exception", str(error_message), -1)
+            logs_as_dict = self._export_logs_as_dict()
+            logs_as_dict["status_of_test"] = "MP_EXCEPTION"
             return logs_as_dict
 
         # Return the logs.
