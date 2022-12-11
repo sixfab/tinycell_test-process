@@ -3,25 +3,29 @@ Repo for testing tinycell devices over a linux OS. This program opens a serial c
 
 Example Slack message can be found below:
 ```md
-==== Test Results for _test-name_ ====
-- Status: Status.SUCCESS
-- Device Port: /dev/ttyACM0
-- Total Elapsed Time: 4.041985750198364
-(as test_result.json):
+- *Test Script*: dummy_test
+- *Test Status*: Status.SUCCESS
+        - Success: 6
+        - Error: 0
+        - Timeout: 0
+- *Device Port*: /dev/ttyACM0
+- *Total Elapsed Time*: 4.167506217956543
+"""
 [
     {
-        "command": "SOME_COMMAND",
+        "command": "SOME COMMAND",
         "result": [],
-        "elapsed_time": 3.1457700729370117
+        "elapsed_time": 3.271233320236206
     },
     {
-        "command": "SOME_OTHER_COMMAND",
+        "command": "SOME COMMAND",
         "result": [
-           "SOME_DEBUG_MESSAGE",
-           "SOME_DEBUG_MESSAGE",
-           "SOME_DEBUG_MESSAGE",
+            "SOME RESULT 1",
+            "SOME RESULT 2",
+            "SOME RESULT 3",
+            (...)
         ],
-        "elapsed_time": 0.43717122077941895
+        "elapsed_time": 0.4333963394165039
     },
     (...)
 ]
@@ -46,6 +50,7 @@ These status messages will be returned by the program to Slack channel.
 - `Status.TIMEOUT`: At least one test timed out.
 - `WATCHDOG_TIMEOUT`: Watchdog stopped the program.
 - `TERMINATE_REQUEST`: Program was terminated by coordinator (SIGUSR1).
+- `MP_EXCEPTON`: A MicroPython exception occured.
 
 ## Architecture
 The architecture relies on a test manager class inherited from the state manager used in Tinycell SDK. The problem we did overcome is the implementation of `execute_current_step()` method which was calling a pointer with function parameters given. The inheritence allows us to re-implement that method with desired execution function. In TesterManager class, we send the given functions and their parameters into Tinycell device with using Pyboard tool.

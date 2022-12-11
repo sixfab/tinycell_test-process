@@ -95,14 +95,22 @@ class TesterManager(StateManager):
 
         # If WatchdogTimeout is raised, append the status and finish test.
         except WatchdogTimeout:
+            self._add_log("WATCHDOG_TIMEOUT", "WATCHDOG_TIMEOUT", -1)
             logs_as_dict = self._export_logs_as_dict()
             logs_as_dict["status_of_test"] = "WATCHDOG_TIMEOUT"
             return logs_as_dict
 
         # If TerminateRequest came from coordinator, append the status and finish test.
         except TerminateRequest:
+            self._add_log("TERMINATE_REQUEST", "TERMINATE_REQUEST", -1)
             logs_as_dict = self._export_logs_as_dict()
             logs_as_dict["status_of_test"] = "TERMINATE_REQUEST"
+            return logs_as_dict
+
+        except Exception as error_message:
+            self._add_log("MicroPython Exception", str(error_message), -1)
+            logs_as_dict = self._export_logs_as_dict()
+            logs_as_dict["status_of_test"] = "MP_EXCEPTION"
             return logs_as_dict
 
         # Return the logs.
@@ -259,8 +267,36 @@ class TesterManager(StateManager):
             "device_port": self.tinycell_port,
             "total_elapsed_time": self.total_elapsed_time,
             "status_of_test": status_of_test,
+            "status_counts": self._get_status_counts(),
             "logs": logs_as_dict_list,
         }
+
+    def _get_status_counts(self) -> dict:
+        """It returns the number of each status type.
+
+        Returns
+        -------
+        dict
+            A dict which contains the status counts.
+        """
+        status_counts = {
+            "Status.SUCCESS": 0,
+            "Status.ERROR": 0,
+            "Status.TIMEOUT": 0,
+        }
+
+        for log in self.logs:
+            if log.get_status() == Status.SUCCESS:
+                status_counts["Status.SUCCESS"] += 1
+            elif log.get_status() == Status.ERROR:
+                status_counts["Status.ERROR"] += 1
+            elif log.get_status() == Status.TIMEOUT:
+                status_counts["Status.TIMEOUT"] += 1
+            else:
+                raise ValueError("Unknown status.")
+
+        return status_counts
+
 
     def _watchdog_handler(self, signum: int, _):
         """It handles the watchdog timeout."""
@@ -301,13 +337,16 @@ class TesterManager(StateManager):
 
         params = self.current.function_params
 
-        # Construct the command to be sent.
-        self.current.function += "("
-        if params:
-            for key, value in params.items():
-                self.current.function += f"{key}={value},"
-            self.current.function = self.current.function[:-1]
-        self.current.function += ")"
+        # It checks if the current step is a retry
+        if not "(" in self.current.function:
+            params = self.current.function_params
+            # Construct the command to be sent.
+            self.current.function += "("
+            if params:
+                for key, value in params.items():
+                    self.current.function += f"{key}={value},"
+                self.current.function = self.current.function[:-1]
+            self.current.function += ")"
 
         # It sends the command to the device.
         result = self._send_command(self.current.function)
