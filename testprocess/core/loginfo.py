@@ -1,5 +1,6 @@
 from core.helpers.status import Status
 
+
 class LogInfo:
     """This class stores the log information of the command."""
 
@@ -16,13 +17,13 @@ class LogInfo:
             "elapsed_time": self.elapsed_time,
         }
 
-    def get_status(self) -> bool:
+    def get_status(self) -> int:
         """It checks if any status returned Status.ERROR.
 
         Returns
         -------
-        bool
-            True if command succees, False otherwise.
+        int
+            Status response of the command.
         """
         for per_result in self.result:
             if f"'status': {Status.ERROR}" in per_result:

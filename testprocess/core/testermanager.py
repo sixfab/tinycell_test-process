@@ -30,7 +30,8 @@ class TesterManager(StateManager):
     for the testing purposes which uses StateManager
     as its base class.
     """
-    TERMINATION_SIGNAL = signal.SIGUSR1
+
+    TERMINATION_SIGNAL = signal.SIGTERM
 
     def __init__(self, first_step, function_name=None) -> None:
         # User-defined attributes.
@@ -134,6 +135,23 @@ class TesterManager(StateManager):
 
         return Status.SUCCESS
 
+    def get_status_string(self) -> str:
+        """It returns the last status of the logs.
+
+        Returns
+        -------
+        string
+            A Status indicator string.
+        """
+        # Get status of test for more summarized information.
+        status_of_test = "Status.SUCCESS"
+        if self.logs[-1].get_status() == Status.ERROR:
+            status_of_test = "Status.ERROR"
+        elif self.logs[-1].get_status() == Status.TIMEOUT:
+            status_of_test = "Status.TIMEOUT"
+
+        return status_of_test
+
     ############################
     ##    INTERNAL METHODS    ##
     ############################
@@ -213,9 +231,7 @@ class TesterManager(StateManager):
         result_command_b = self.pyb.exec_("print(result)")
 
         # Extract information from the byte array.
-        result = self._extract_result(result_debug_b) + self._extract_result(
-            result_command_b
-        )
+        result = self._extract_result(result_debug_b) + self._extract_result(result_command_b)
         # Add this command to logs.
         log = self._add_log(command, result, elapsed_time)
 
@@ -255,18 +271,11 @@ class TesterManager(StateManager):
         """
         logs_as_dict_list = [log.to_dict() for log in self.logs]
 
-        # Get status of test for more summarized information.
-        status_of_test = "Status.SUCCESS"
-        if self.check_any_problem() == Status.ERROR:
-            status_of_test = "Status.ERROR"
-        elif self.check_any_problem() == Status.TIMEOUT:
-            status_of_test = "Status.TIMEOUT"
-
         return {
             "test_name": self.function_name,
             "device_port": self.tinycell_port,
             "total_elapsed_time": self.total_elapsed_time,
-            "status_of_test": status_of_test,
+            "status_of_test": self.get_status_string(),
             "status_counts": self._get_status_counts(),
             "logs": logs_as_dict_list,
         }
@@ -296,7 +305,6 @@ class TesterManager(StateManager):
                 raise ValueError("Unknown status.")
 
         return status_counts
-
 
     def _watchdog_handler(self, signum: int, _):
         """It handles the watchdog timeout."""
