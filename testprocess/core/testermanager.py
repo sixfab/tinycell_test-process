@@ -135,6 +135,23 @@ class TesterManager(StateManager):
 
         return Status.SUCCESS
 
+    def get_status_string(self) -> str:
+        """It returns the last status of the logs.
+
+        Returns
+        -------
+        string
+            A Status indicator string.
+        """
+        # Get status of test for more summarized information.
+        status_of_test = "Status.SUCCESS"
+        if self.logs[-1].get_status() == Status.ERROR:
+            status_of_test = "Status.ERROR"
+        elif self.logs[-1].get_status() == Status.TIMEOUT:
+            status_of_test = "Status.TIMEOUT"
+
+        return status_of_test
+
     ############################
     ##    INTERNAL METHODS    ##
     ############################
@@ -254,18 +271,11 @@ class TesterManager(StateManager):
         """
         logs_as_dict_list = [log.to_dict() for log in self.logs]
 
-        # Get status of test for more summarized information.
-        status_of_test = "Status.SUCCESS"
-        if self.check_any_problem() == Status.ERROR:
-            status_of_test = "Status.ERROR"
-        elif self.check_any_problem() == Status.TIMEOUT:
-            status_of_test = "Status.TIMEOUT"
-
         return {
             "test_name": self.function_name,
             "device_port": self.tinycell_port,
             "total_elapsed_time": self.total_elapsed_time,
-            "status_of_test": status_of_test,
+            "status_of_test": self.get_status_string(),
             "status_counts": self._get_status_counts(),
             "logs": logs_as_dict_list,
         }
