@@ -30,7 +30,8 @@ class TesterManager(StateManager):
     for the testing purposes which uses StateManager
     as its base class.
     """
-    TERMINATION_SIGNAL = signal.SIGUSR1
+
+    TERMINATION_SIGNAL = signal.SIGTERM
 
     def __init__(self, first_step, function_name=None) -> None:
         # User-defined attributes.
@@ -213,9 +214,7 @@ class TesterManager(StateManager):
         result_command_b = self.pyb.exec_("print(result)")
 
         # Extract information from the byte array.
-        result = self._extract_result(result_debug_b) + self._extract_result(
-            result_command_b
-        )
+        result = self._extract_result(result_debug_b) + self._extract_result(result_command_b)
         # Add this command to logs.
         log = self._add_log(command, result, elapsed_time)
 
@@ -296,7 +295,6 @@ class TesterManager(StateManager):
                 raise ValueError("Unknown status.")
 
         return status_counts
-
 
     def _watchdog_handler(self, signum: int, _):
         """It handles the watchdog timeout."""
