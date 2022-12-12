@@ -165,6 +165,23 @@ class TesterManager(StateManager):
 
         return status_of_test
 
+    def get_status_string(self) -> str:
+        """It returns the last status of the logs.
+
+        Returns
+        -------
+        string
+            A Status indicator string.
+        """
+        # Get status of test for more summarized information.
+        status_of_test = "Status.SUCCESS"
+        if self.logs[-1].get_status() == Status.ERROR:
+            status_of_test = "Status.ERROR"
+        elif self.logs[-1].get_status() == Status.TIMEOUT:
+            status_of_test = "Status.TIMEOUT"
+
+        return status_of_test
+
     ############################
     ##    INTERNAL METHODS    ##
     ############################
