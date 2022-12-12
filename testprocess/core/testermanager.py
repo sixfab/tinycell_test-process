@@ -33,7 +33,7 @@ class TesterManager(StateManager):
     """
 
     TERMINATION_SIGNAL = signal.SIGTERM
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s --> %(levelname)-8s %(message)s")
 
     def __init__(self, first_step, function_name=None) -> None:
         # User-defined attributes.
@@ -127,6 +127,7 @@ class TesterManager(StateManager):
             return logs_as_dict
 
         # Return the logs.
+        logging.info("Test is finished. Exporting logs.")
         return self._export_logs_as_dict()
 
     def check_any_problem(self) -> int:
@@ -242,7 +243,7 @@ class TesterManager(StateManager):
         result_debug_b = self.pyb.exec_(f"result = {command}")
         elapsed_time = time.time() - start_execution_time
         result_command_b = self.pyb.exec_("print(result)")
-        logging.info("Command is resulted as: %s.", result_command_b.decode("utf-8")[:-2])
+        logging.info("Command is resulted as \t%s.", result_command_b.decode("utf-8")[:-2])
 
         # Extract information from the byte array.
         result = self._extract_result(result_debug_b) + self._extract_result(result_command_b)
@@ -315,8 +316,10 @@ class TesterManager(StateManager):
                 status_counts["Status.ERROR"] += 1
             elif log.get_status() == Status.TIMEOUT:
                 status_counts["Status.TIMEOUT"] += 1
+            elif log.get_status() == Status.UNKNOWN:
+                pass
             else:
-                raise ValueError("Unknown status.")
+                raise ValueError("Couldn't parse status.")
 
         return status_counts
 
