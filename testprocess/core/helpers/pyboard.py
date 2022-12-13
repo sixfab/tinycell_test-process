@@ -252,6 +252,8 @@ class ProcessPtyToTerminal:
 
 
 class Pyboard:
+    TIMEOUT_FOR_FOLLOW = 150  # Big enough to allow for tests.
+
     def __init__(
         self, device, baudrate=115200, user="micro", password="python", wait=0, exclusive=True
     ):
@@ -452,7 +454,7 @@ class Pyboard:
         if data != b"OK":
             raise PyboardError("could not exec command (response: %r)" % data)
 
-    def exec_raw(self, command, timeout=30, data_consumer=None):
+    def exec_raw(self, command, timeout=TIMEOUT_FOR_FOLLOW, data_consumer=None):
         self.exec_raw_no_follow(command)
         return self.follow(timeout, data_consumer)
 
