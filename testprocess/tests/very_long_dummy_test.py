@@ -5,12 +5,6 @@ as development purposes.
 from core.testermanager import TesterManager, Step
 
 
-def long_delay():
-    import time
-
-    time.sleep(300)
-
-
 # Steps for the test
 step_one_success = Step(
     name="step_one",
@@ -29,9 +23,10 @@ step_two_success = Step(
 
 step_three = Step(
     name="step_three",
-    function="long_delay",
+    function="time.sleep",
     success="success",
-    fail="failure"
+    fail="failure",
+    function_params={"seconds": 300}
 )
 
 
