@@ -2,11 +2,9 @@
 This is the main run file to execute
 tests via given flag settings.
 """
-import os
 import argparse
 import json
 from importlib import import_module
-from dotenv import load_dotenv
 
 from core.helpers.config import SLACK_BOT_TOKEN, SLACK_REPORT_CHANNEL_ID, TESTS_DIR
 from core.slackbot import SlackBot
@@ -46,6 +44,13 @@ def init_argument_parser():
         required=False,
         help="Provide the timeout in seconds (per step) for Watchdog.",
     )
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        action="store_true",
+        required=False,
+        help="Provide the verbosity level.",
+    )
 
     return parser.parse_args()
 
@@ -62,6 +67,9 @@ if __name__ == "__main__":
 
     # Import the given test file.
     test_sm = import_module(f"{TESTS_DIR}.{test_file_name}").state_manager
+
+    if args.verbose:
+        test_sm.set_debugging(True)
 
     # Create a process instance and run it.
     test_sm.set_port(port_to_be_tested)
