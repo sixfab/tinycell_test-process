@@ -15,6 +15,10 @@ class SlackBot:
         # Note that this is the channel ID but not its name.
         self.channel = channel_id
 
+    def send_text_message(self, message: str) -> None:
+        """This function sends a text message to the channel."""
+        return self.app.client.chat_postMessage(channel=self.channel, text=message)
+
     def send_results(self, test_result: dict) -> None:
         """This function sends a message to the channel."""
         json_logs = json.dumps(test_result.get("logs"), indent=4)

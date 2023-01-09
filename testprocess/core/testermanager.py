@@ -3,6 +3,7 @@ Module for managing processes on modem step by step.
 It is adapted from tinycell MicroPython SDK.
 """
 import os
+import sys
 import time
 import json
 import signal
@@ -33,7 +34,15 @@ class TesterManager(StateManager):
     """
 
     TERMINATION_SIGNAL = signal.SIGTERM
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s --> %(levelname)-8s %(message)s")
+
+    # Settings of the logger
+    debug_logger = logging.getLogger()
+    debug_logger.setLevel(logging.DEBUG)
+
+    debug_handler = logging.StreamHandler(sys.stdout)
+    debug_handler.setLevel(logging.DEBUG)
+    formatter = logging.Formatter("%(asctime)s --> %(levelname)-8s %(message)s")
+    debug_handler.setFormatter(formatter)
 
     def __init__(self, first_step, function_name=None) -> None:
         # User-defined attributes.
@@ -51,11 +60,18 @@ class TesterManager(StateManager):
         # and get the base class attributes.
         super().__init__(first_step, function_name)
 
+    def set_debugging(self, debug: bool) -> None:
+        """It sets the debugging mode."""
+        if debug:
+            self.debug_logger.addHandler(self.debug_handler)
+        else:
+            self.debug_logger.removeHandler(self.debug_handler)
+
     def set_port(self, port: str) -> None:
         """It sets the port of the device."""
         self.tinycell_port = port
         self.pyb = Pyboard(self.tinycell_port)
-        logging.info("Port is set to %s.", self.tinycell_port)
+        self.debug_logger.info("Port is set to %s.", self.tinycell_port)
 
     def run_the_test(self, timeout: int = None) -> list:
         """It runs all the steps on the
@@ -78,7 +94,7 @@ class TesterManager(StateManager):
             timeout = 300  # seconds
         self.wdg_timeout = timeout
         self.watchdog = Watchdog(timeout, self._watchdog_handler)
-        logging.info("Watchdog is set to %d seconds.", timeout)
+        self.debug_logger.info("Watchdog is set to %d seconds.", timeout)
 
         # Append SIGTERM handler.
         signal.signal(self.TERMINATION_SIGNAL, self._sudden_kill_handler)
@@ -87,25 +103,25 @@ class TesterManager(StateManager):
             self._start_repl()
             # Send the setup commands.
             self._prepare_setup()
-            logging.info("REPL started and setup commands are sent.")
+            self.debug_logger.info("REPL started and setup commands are sent.")
 
             # Run the state manager.
             while True:
                 # Run the current step.
-                logging.info("Running step %s.", self.current.name)
+                self.debug_logger.info("Running step %s.", self.current.name)
                 result = self.run()
-                logging.info("Step %s is finished.", self.current.name)
+                self.debug_logger.info("Step %s is finished.", self.current.name)
                 if result["status"] != Status.ONGOING:
                     break
                 time.sleep(result["interval"])
 
             # Close the REPL.
             self._stop_repl()
-            logging.info("REPL is closed.")
+            self.debug_logger.info("REPL is closed.")
 
         # If WatchdogTimeout is raised, append the status and finish test.
         except WatchdogTimeout:
-            logging.info("Watchdog timeout is raised.")
+            self.debug_logger.info("Watchdog timeout is raised.")
             self._add_log("WATCHDOG_TIMEOUT", "WATCHDOG_TIMEOUT", -1)
             logs_as_dict = self._export_logs_as_dict()
             logs_as_dict["status_of_test"] = "WATCHDOG_TIMEOUT"
@@ -113,21 +129,21 @@ class TesterManager(StateManager):
 
         # If TerminateRequest came from coordinator, append the status and finish test.
         except TerminateRequest:
-            logging.info("Terminate request is raised.")
+            self.debug_logger.info("Terminate request is raised.")
             self._add_log("TERMINATE_REQUEST", "TERMINATE_REQUEST", -1)
             logs_as_dict = self._export_logs_as_dict()
             logs_as_dict["status_of_test"] = "TERMINATE_REQUEST"
             return logs_as_dict
 
         except Exception as error_message:
-            logging.info("MicroPython exception is raised: \n%s", error_message)
+            self.debug_logger.info("MicroPython exception is raised: \n%s", error_message)
             self._add_log("MicroPython Exception", str(error_message), -1)
             logs_as_dict = self._export_logs_as_dict()
             logs_as_dict["status_of_test"] = "MP_EXCEPTION"
             return logs_as_dict
 
         # Return the logs.
-        logging.info("Test is finished. Exporting logs.")
+        self.debug_logger.info("Test is finished. Exporting logs.")
         return self._export_logs_as_dict()
 
     def check_any_problem(self) -> int:
@@ -255,12 +271,14 @@ class TesterManager(StateManager):
             It includes the status, response and
             elapsed time of the command.
         """
-        logging.info("Sending command: %s.", command)
+        self.debug_logger.info("Sending command: %s.", command)
         start_execution_time = time.time()
         result_debug_b = self.pyb.exec_(f"result = {command}")
         elapsed_time = time.time() - start_execution_time
         result_command_b = self.pyb.exec_("print(result)")
-        logging.info("Command is resulted as \t%s.", result_command_b.decode("utf-8")[:-2])
+        self.debug_logger.info(
+            "Command is resulted as \t%s.", result_command_b.decode("utf-8")[:-2]
+        )
 
         # Extract information from the byte array.
         result = self._extract_result(result_debug_b) + self._extract_result(result_command_b)
